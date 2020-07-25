@@ -77,10 +77,11 @@ for i = 1 : max_iter
         fprintf('Iteration count = %d, obj. fcn = %f\n', i, obj_fcn(i));
     end
     % check termination condition
-	if i > 1
+    if i > 1
 		if norm((U-pre_U),'fro') < e, break; end
     end
-    
+end
+
 iter_n = i;	% Actual number of iterations 
 obj_fcn(iter_n+1:max_iter) = [];
 end
