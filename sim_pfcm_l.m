@@ -1,11 +1,10 @@
-function [center, U, T, obj_fcn] = sim_pfcm_l(data, cluster_n, options)
+function [U, T, obj_fcn] = sim_pfcm_l(data, cluster_n, options)
 %sim_pfcm_l Dataset clustering using similarity measure-based possibilistic
 % FCM with label information
-%   [CENTER, U, T, OBJ_FCN] = SIM_PFCM_L(DATA, CLUSTER_N) finds CLUSTER_N 
+%   [U, T, OBJ_FCN] = SIM_PFCM_L(DATA, CLUSTER_N) finds CLUSTER_N 
 %   number of clusters in the dataset DATA. DATA is size M-by-N, where M is
 %   the number of data points and N is the number of coordinates for each
-%   data point. The coordinates for each cluster center are returned in the
-%   rows of the matrix CENTER. The membership function matrix U contains
+%   data point. The membership function matrix U contains
 %   the grade of membership of each data point in each cluster. The values
 %   0 and 1 indicate no membership and full membership respectively. Grades
 %   between 0 and 1 indicate that the data point has partial membership in
@@ -15,7 +14,7 @@ function [center, U, T, obj_fcn] = sim_pfcm_l(data, cluster_n, options)
 %   objective function is minimized to find the best location for the
 %   clusters and its values are returned in OBJ_FCN.
 %
-%   [CENTER, U, T, OBJ_FCN] = SIM_PFCM_L(DATA, CLUSTER_N, OPTIONS)
+%   [U, T, OBJ_FCN] = SIM_PFCM_L(DATA, CLUSTER_N, OPTIONS)
 %   specifies a vector of options for the clustering process:
 %       OPTIONS(1): exponent for the matrix U -> m      (default: 2.0)
 %       OPTIONS(2): exponent for the matrix T -> eta    (default: 2.0)
@@ -71,7 +70,7 @@ T = initT(data, cluster_n);
 
 for i = 1 : max_iter
     pre_U = U;
-    [U, T, center, obj_fcn(i)] = step_simpfcml(data, U, T, cluster_n, ...
+    [U, T, obj_fcn(i)] = step_simpfcml(data, U, T, cluster_n, ...
         m, eta, a, b, N_k);
     if display
         fprintf('Iteration count = %d, obj. fcn = %f\n', i, obj_fcn(i));
