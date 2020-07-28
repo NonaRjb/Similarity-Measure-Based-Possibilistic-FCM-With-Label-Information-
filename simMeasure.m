@@ -67,6 +67,15 @@ den = sum(a * U .^ m + b * T .^ eta, 2);
 rho = (a * U .^ m + b * T .^ eta) * W ./ den; % todo: d_lk < w is not considered
 end
 
+function w = w_thresh(data)
+mean_data = mean(data, 1);
+data_white = data - repmat(mean_data, size(data, 1), 1);
+data_white = sqrt(sum(data_white .^ 2, 2));
+d_bar = mean(data_white, 1);
+delta = 3;
+w = delta * d_bar;
+end
+
 function W = point_sim(data, img_size)
 if nargin < 2
     dis = coordinate_dist(data);
@@ -74,7 +83,15 @@ else
     dis = coordinate_dist(data, img_size);
 end
 d = intensity_dist(data);
-W = exp(-1*d.^2 - dis);
+wth = w_thresh(data);
+ind = d > wth;
+
+if max(d(:)) > 0
+    d = d / max(d(:)); % todo: still not sure about what H is in the paper (should be devided by H)
+end
+
+W = zeros(size(d));
+W(ind) = exp(-1*d(ind).^2 - dis(ind));
 end
 
 function d = intensity_dist(data)
@@ -85,16 +102,18 @@ for l = 1 : size(data, 1)
         d(l, k) = norm(data(l) - data(k));
     end
 end
-if max(d(:)) > 0
-    d = d / max(d(:)); % todo: still not sure about what H is in the paper (should be devided by H)
-end
+% moved to point_sim function
+% if max(d(:)) > 0
+%     d = d / max(d(:)); % todo: still not sure about what H is in the paper (should be devided by H)
+% end
 d = d + d'; 
 end
 
 function dis = coordinate_dist(data, img_size)
 if nargin == 2
     data_ind = 1 : length(data);
-    data_new(:, 1:2) = ind2sub(img_size, data_ind);
+    data_new = zeros(size(data,1), 2);
+    [data_new(:, 1), data_new(:,2)] = ind2sub(img_size, data_ind);
 else
     data_new = data;
 end

@@ -8,7 +8,7 @@ mf = U .^ m;
 tf = T.^ eta;
 tfo = (1-T) .^ eta;
 
-if nargin < 10
+if img_size(1) == 0 && img_size(2) == 0
     tau = simMeasure(data, cluster_n, U, T, m, eta, a, b);
     f = labelInfo(data, cluster_n, U, N_k, beta);
 else
