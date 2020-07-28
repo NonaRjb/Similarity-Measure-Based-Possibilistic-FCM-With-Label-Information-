@@ -3,6 +3,7 @@ close all
 clear variables
 
 img = imread('Mri2.bmp');
+img = imresize(img, 0.5);
 [m, n] = size(img);
 img_vec = reshape(im2double(img), [], 1);
 

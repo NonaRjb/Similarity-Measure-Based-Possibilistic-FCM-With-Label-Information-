@@ -1,28 +1,28 @@
-function tau = simMeasure(data, cluster_n, U, T, m, eta, a, b, img_size)
+function tau = simMeasure(data, cluster_n, U, T, m, eta, a, b, H, img_size)
 %SIMMEASURE measures the interclass and intraclass similarity
 %   tau = simMeasure(data, cluster_n, U, T, m, eta, a, b, img_size)
 %   measures interclass and intraclass similarity for each data point in
 %   a cluster. 
 %   tau(ik) = sum( rho(jk) * S(ij) ); j = 1 : C
 
-if nargin < 9
-    rho = rel_sim(data, U, T, m, eta, a, b);
-    S = similarity(data, cluster_n, U, T, m, eta, a, b);
+if nargin < 10
+    rho = rel_sim(data, U, T, m, eta, a, b, H);
+    S = similarity(data, cluster_n, U, T, m, eta, a, b, H);
 else
-    rho = rel_sim(data, U, T, m, eta, a, b, img_size);
-    S = similarity(data, cluster_n, U, T, m, eta, a, b, img_size);
+    rho = rel_sim(data, U, T, m, eta, a, b, H, img_size);
+    S = similarity(data, cluster_n, U, T, m, eta, a, b, H, img_size);
 end
 
 tau = S * rho;
 
 end
 
-function S = similarity(data, cluster_n, U, T, m, eta, a, b, img_size)
+function S = similarity(data, cluster_n, U, T, m, eta, a, b, H, img_size)
 
 if nargin < 9
-    rho = rel_sim(data, U, T, m, eta, a, b, img_size);
+    rho = rel_sim(data, U, T, m, eta, a, b, H, img_size);
 else
-    rho = rel_sim(data, U, T, m, eta, a, b);
+    rho = rel_sim(data, U, T, m, eta, a, b, H);
 end
 
 max_vals = max(rho, [], 2);
@@ -56,15 +56,46 @@ end
 
 end
 
-function rho = rel_sim(data, U, T, m , eta, a, b, img_size)
+function rho = rel_sim(data, U, T, m , eta, a, b, H, img_size)
 
-if nargin < 8
-    W = point_sim(data);
+% if nargin < 8
+%     W = point_sim(data);
+% else
+%     W = point_sim(data, img_size);
+% end
+
+if nargin == 9
+    data_ind = 1 : length(data);
+    data_new = zeros(size(data,1), 2);
+    [data_new(:, 1), data_new(:,2)] = ind2sub(img_size, data_ind);
 else
-    W = point_sim(data, img_size);
+    data_new = data;
 end
+rho = zeros(size(U, 1), size(data, 1));
 den = sum(a * U .^ m + b * T .^ eta, 2);
-rho = (a * U .^ m + b * T .^ eta) * W ./ den; % todo: d_lk < w is not considered
+wth = w_thresh(data);
+% H = h_bandwidth(data);
+
+for k = 1 : size(data, 1)
+    % d = zeros(size(data, 1), 1);
+    % dis = zeros(size(data, 1), 1);
+    d = sqrt(sum((repmat(data(k), size(data, 1), 1)- data).^2, 2));
+    dis = sqrt(sum((repmat(data_new(k), size(data_new, 1), 1)- data_new).^2, 2));
+%     for l = 1 : size(data, 1)
+%       d(l) = norm(data(l) - data(k));   
+%       dis(l) = norm(data_new(l) - data_new(k));
+%     end
+    ind = d < wth;
+    d = d / H;
+    W = zeros(size(d));
+    W(ind) = exp(-1*d(ind).^2 - dis(ind));
+    rho(:, k) = (a * U .^ m + b * T .^ eta) * W ;    
+end
+
+rho = rho ./ den;
+
+%den = sum(a * U .^ m + b * T .^ eta, 2);
+%rho = (a * U .^ m + b * T .^ eta) * W ./ den; % todo: d_lk < w is not considered
 end
 
 function w = w_thresh(data)

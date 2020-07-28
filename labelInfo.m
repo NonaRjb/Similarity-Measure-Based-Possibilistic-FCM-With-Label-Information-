@@ -25,17 +25,17 @@ end
 
 cluster_2d = reshape(cluster_id, xy(1), xy(2));
 Y = zeros(cluster_n, size(data, 1));
-for i = 1 : cluster_num
+for i = 1 : cluster_n
     for k = 1 : size(data, 1)
        [row, col] = ind2sub(xy, k);
        v = row - (N_k-1)/2 : row + (N_k-1)/2;
        h = col - (N_k-1)/2 : col + (N_k-1)/2;
-       v = v(v > 0);
-       h = h(h > 0); 
+       v = v(v > 0 & v < xy(1));
+       h = h(h > 0 & h < xy(2)); 
        for r = v
            for c = h
-               if cluster_2d(r, v) == i
-                  Y(i, k) = Y(i, k) + 1 / sqrt((v-row)^2+(h-col)^2);
+               if cluster_2d(r, c) == i && r ~= row && c ~= col
+                  Y(i, k) = Y(i, k) + 1 / sqrt((r-row)^2+(c-col)^2);
                end
            end
        end

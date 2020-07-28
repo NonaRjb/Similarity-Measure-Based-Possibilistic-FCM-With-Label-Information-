@@ -66,6 +66,7 @@ e = options(6);         % stop criteria epsilon
 max_iter = options(7);  % maximum number of iterations
 display = options(8);   % display info or not
 img_size = [options(9) options(10)];
+H = h_bandwidth(data);
 
 obj_fcn = zeros(max_iter, 1);   % array for objective function
 
@@ -75,7 +76,7 @@ T = initT(size(data,1), cluster_n);
 for i = 1 : max_iter
     pre_U = U;
     [U, T, obj_fcn(i)] = step_simpfcml(data, U, T, cluster_n, ...
-        m, eta, a, b, N_k, img_size);
+        m, eta, a, b, N_k, H, img_size);
     if display
         fprintf('Iteration count = %d, obj. fcn = %f\n', i, obj_fcn(i));
     end

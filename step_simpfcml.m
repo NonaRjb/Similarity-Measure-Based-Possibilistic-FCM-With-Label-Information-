@@ -1,5 +1,5 @@
 function [U_new, T_new, obj_fcn] = step_simpfcml(data, U, T,...
-    cluster_n, m, eta, a, b, N_k, img_size)
+    cluster_n, m, eta, a, b, N_k, H, img_size)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -9,10 +9,10 @@ tf = T.^ eta;
 tfo = (1-T) .^ eta;
 
 if img_size(1) == 0 && img_size(2) == 0
-    tau = simMeasure(data, cluster_n, U, T, m, eta, a, b);
+    tau = simMeasure(data, cluster_n, U, T, m, eta, a, b, H);
     f = labelInfo(data, cluster_n, U, N_k, beta);
 else
-    tau = simMeasure(data, cluster_n, U, T, m, eta, a, b, img_size);
+    tau = simMeasure(data, cluster_n, U, T, m, eta, a, b, H, img_size);
     f = labelInfo(data, cluster_n, U, N_k, beta, img_size);
 end
 
