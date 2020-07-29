@@ -23,8 +23,10 @@ if mod(N_k, 2) == 0
     error('The Window Size Should Be Odd')
 end
 
-cluster_2d = reshape(cluster_id, xy(1), xy(2));
 Y = zeros(cluster_n, size(data, 1));
+
+if nargin == 5
+cluster_2d = reshape(cluster_id, xy(1), xy(2));
 for i = 1 : cluster_n
     for k = 1 : size(data, 1)
        [row, col] = ind2sub(xy, k);
@@ -39,6 +41,18 @@ for i = 1 : cluster_n
                end
            end
        end
+    end
+end
+else
+    for i = 1 : cluster_n
+        for k = 1 : size(data, 1)
+            [cIdx,cD] = knnsearch(data, data(k, :), 'K', N_k);
+            for ind = 1 : length(cIdx)
+                if cluster_id(cIdx(ind)) == i & cD(ind) ~= 0
+                    Y(i, k) = Y(i, k) + 1 / cD(ind);
+                end
+            end
+        end
     end
 end
 den0 = sum(Y, 1);
