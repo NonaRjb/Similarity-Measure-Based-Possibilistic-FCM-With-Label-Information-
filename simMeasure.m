@@ -25,34 +25,39 @@ else
     rho = rel_sim(data, U, T, m, eta, a, b, H);
 end
 
+% finding all of the points which maximize rho
 max_vals = max(rho, [], 2);
-indices = [];
-% flag = zeros(1, size(rho, 1));
-% pre_flag = 0;
+indices = zeros(size(rho));
 
 for i = 1 : size(rho, 1)
-    indices = [indices, find(rho(i, :) == max_vals(i))];
-    % flag(1, i) = length(indices) + pre_flag;
-    % pre_flag = flag(1, i);
+    % indices = [indices, find(rho(i, :) == max_vals(i))];
+    % idx = find(rho(i, :) == max_vals(i));
+    indices(i, rho(i, :) == max_vals(i)) = 1;
 end
-points = unique(indices);
+% points = unique(indices);
 
 S = zeros(cluster_n, cluster_n);
 for i = 1 : cluster_n
     for j = i : cluster_n
-        num = 0;
-        den1 = 0;
-        den2 = 0;
-        for k = points
-            num = num + rho(i, k) * rho(j, k);
-            den1 = den1 + rho(i, k);
-            den2 = den2 + rho(j, k);
-        end
+%         num = 0;
+%         den1 = 0;
+%         den2 = 0;
+%         for k = points
+%             num = num + rho(i, k) * rho(j, k);
+%             den1 = den1 + rho(i, k);
+%             den2 = den2 + rho(j, k);
+%         end
+        num = sum(rho(i, indices(i,:) == 1 | indices(j,:) == 1) .* ...
+            rho(j, indices(i,:) == 1 | indices(j,:) == 1));
+        den1 = sum(rho(i, indices(i,:) == 1 | indices(j,:) == 1));
+        den2 = sum(rho(j, indices(i,:) == 1 | indices(j,:) == 1));
         den = den1 * den2;
         den = sqrt(den);
         S(i, j) = num / den;
     end
 end
+
+S = S + S' - diag(diag(S));
 
 end
 
@@ -68,13 +73,16 @@ if nargin == 9
     data_ind = 1 : length(data);
     data_new = zeros(size(data,1), 2);
     [data_new(:, 1), data_new(:,2)] = ind2sub(img_size, data_ind);
+    Diag = sqrt((img_size(1)-1)^2 + (img_size(2)-1)^2);
 else
     data_new = data;
+    Diag = H;
 end
 rho = zeros(size(U, 1), size(data, 1));
 den = sum(a * U .^ m + b * T .^ eta, 2);
 wth = w_thresh(data);
 % H = h_bandwidth(data);
+% [~, c] = max(U, [], 1);
 
 for k = 1 : size(data, 1)
     % d = zeros(size(data, 1), 1);
@@ -87,9 +95,16 @@ for k = 1 : size(data, 1)
 %     end
     ind = d < wth;
     d = d / H;
+    dis = dis / Diag;
     W = zeros(size(d));
     W(ind) = exp(-1*d(ind).^2 - dis(ind));
-    rho(:, k) = (a * U .^ m + b * T .^ eta) * W ;    
+%     num = zeros(size(U));
+%     for n = 1 : size(U, 1)
+%         idx = c == n;
+%         num(n, idx) = 1;
+%     end
+%     num = num .* (a * U .^ m + b * T .^ eta);   
+     rho(:, k) = (a * U .^ m + b * T .^ eta) * W ;    
 end
 
 rho = rho ./ den;

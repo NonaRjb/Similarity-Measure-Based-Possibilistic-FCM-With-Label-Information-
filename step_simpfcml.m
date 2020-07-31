@@ -26,7 +26,7 @@ tau2 = tau .^ 2;
 den2 = ((b/gamma) ./ (f2 .* tau2)).^(1 / (eta - 1));
 T_new = 1 ./ ( 1 + den2);
 
-obj_fcn = sum(sum((1./f2 + 1./tau2).*(a*mf + b*tf))) + sum(gamma*sum(tfo));
+obj_fcn = sum(sum((1./f2 .* 1./tau2).*(a*mf + b*tf))) + sum(gamma*sum(tfo));
 
 
 end

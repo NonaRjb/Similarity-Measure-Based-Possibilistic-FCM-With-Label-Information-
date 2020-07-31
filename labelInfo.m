@@ -46,9 +46,9 @@ end
 else
     for i = 1 : cluster_n
         for k = 1 : size(data, 1)
-            [cIdx,cD] = knnsearch(data, data(k, :), 'K', N_k);
+            [cIdx,cD] = knnsearch(data, data(k, :), 'K', N_k^2);
             for ind = 1 : length(cIdx)
-                if cluster_id(cIdx(ind)) == i & cD(ind) ~= 0
+                if cluster_id(cIdx(ind)) == i && cD(ind) ~= 0
                     Y(i, k) = Y(i, k) + 1 / cD(ind);
                 end
             end
