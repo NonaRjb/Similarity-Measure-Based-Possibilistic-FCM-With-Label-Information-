@@ -9,14 +9,14 @@ img_vec = reshape(im2double(img), [], 1);
 
 mat = txt2mat('pathbased.txt');
 
-options = [NaN, NaN, 3, NaN, NaN, NaN, 100, NaN, 0, 0]; 
-cluster_n = 3;
-[U, T, obj_fcn] = sim_pfcm_l(mat(:, 1:2), cluster_n, options);
+options = [NaN, NaN, 3, 1, 0, NaN, 5, NaN, m, n]; 
+cluster_n = 5;
+[U, T, obj_fcn] = sim_pfcm_l(img_vec, cluster_n, options);
 [~, i] = max(U, [], 1);
-% figure
-% imshow(reshape(i, m, n), [])
 figure
-gscatter(mat(:,1), mat(:,2), i')
+imshow(reshape(i, m, n), [])
+% figure
+% gscatter(mat(:,1), mat(:,2), i')
 % for k = 1 : cluster_n
 %     figure
 %     imshow(reshape(U(k,:), m, n))

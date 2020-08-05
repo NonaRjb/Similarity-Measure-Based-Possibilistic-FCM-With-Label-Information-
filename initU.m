@@ -15,7 +15,7 @@ options = [NaN NaN NaN false];
 % U = U./col_sum(ones(cluster_n, 1), :);
 % [~, i] = max(U, [], 1);
 figure
-gscatter(data(:,1), data(:,2), i')
-%imshow(reshape(i, 128, 128), [])
+% gscatter(data(:,1), data(:,2), i')
+imshow(reshape(i, 128, 128), [])
 end
 

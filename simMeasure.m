@@ -80,15 +80,16 @@ else
 end
 rho = zeros(size(U, 1), size(data, 1));
 den = sum(a * U .^ m + b * T .^ eta, 2);
+% den = a * U .^ m + b * T .^ eta;
 wth = w_thresh(data);
 % H = h_bandwidth(data);
-% [~, c] = max(U, [], 1);
+[~, c] = max(U, [], 1);
 
 for k = 1 : size(data, 1)
     % d = zeros(size(data, 1), 1);
     % dis = zeros(size(data, 1), 1);
-    d = sqrt(sum((repmat(data(k), size(data, 1), 1)- data).^2, 2));
-    dis = sqrt(sum((repmat(data_new(k), size(data_new, 1), 1)- data_new).^2, 2));
+    d = sqrt(sum((repmat(data(k,:), size(data, 1), 1)- data).^2, 2));
+    dis = sqrt(sum((repmat(data_new(k,:), size(data_new, 1), 1)- data_new).^2, 2));
 %     for l = 1 : size(data, 1)
 %       d(l) = norm(data(l) - data(k));   
 %       dis(l) = norm(data_new(l) - data_new(k));
@@ -103,11 +104,15 @@ for k = 1 : size(data, 1)
 %         idx = c == n;
 %         num(n, idx) = 1;
 %     end
-%     num = num .* (a * U .^ m + b * T .^ eta);   
-     rho(:, k) = (a * U .^ m + b * T .^ eta) * W ;    
+%     num = num .* (a * U .^ m + b * T .^ eta);  
+%     mask = zeros(size(U));
+%     mask(:, ind) = 1;
+%     den_tmp = den .* mask;
+%     den_final = sum(den_tmp, 2);
+    rho(:, k) = (a * U .^ m + b * T .^ eta) * W ./ den ;
 end
 
-rho = rho ./ den;
+%rho = rho ./ repmat(den, 1, size(data, 1));
 
 %den = sum(a * U .^ m + b * T .^ eta, 2);
 %rho = (a * U .^ m + b * T .^ eta) * W ./ den; % todo: d_lk < w is not considered
@@ -118,7 +123,7 @@ mean_data = mean(data, 1);
 data_white = data - repmat(mean_data, size(data, 1), 1);
 data_white = sqrt(sum(data_white .^ 2, 2));
 d_bar = mean(data_white, 1);
-delta = 3;
+delta = 0.3;
 w = delta * d_bar;
 end
 
