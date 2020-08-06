@@ -182,7 +182,7 @@ mean_data = mean(data, 1);
 data_white = data - repmat(mean_data, size(data, 1), 1);
 data_white = sqrt(sum(data_white .^ 2, 2));
 d_bar = mean(data_white, 1);
-delta = 0.4;
+delta = 0.5;
 w = delta * d_bar;
 end
 

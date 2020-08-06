@@ -1,4 +1,4 @@
-function similarity = dice_coeff(P, G)
+function similarity = dice_coeff(P, G, cluster_n)
 %DICE_COEFF Computes Sørensen-Dice similarity coefficient for image
 %           segmentation
 %   similarity = dice_coeff(P, G) gets the proposed segmented image, P, and
@@ -7,7 +7,7 @@ function similarity = dice_coeff(P, G)
 %   consider all permutations of one of the images and compute dice
 %   similarity coefficient for each. 
 
-labels_p = unique(P);
+labels_p = 1 : cluster_n;
 labels_g = unique(G);
 
 p_perm = perms(labels_p);
