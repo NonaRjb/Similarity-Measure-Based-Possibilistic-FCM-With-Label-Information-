@@ -15,6 +15,7 @@ if img_size(1) == 0 && img_size(2) == 0
 else
     tau = simMeasure(data, cluster_n, U, T, m, eta, a, b, H, img_size);
     f = labelInfo(data, cluster_n, U, N_k, beta, img_size);
+    % f = ones(size(U));
 end
 
 tmp = (f .* tau) .^ (2 / (m - 1));

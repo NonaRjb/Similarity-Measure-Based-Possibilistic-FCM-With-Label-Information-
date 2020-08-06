@@ -73,6 +73,16 @@ obj_fcn = zeros(max_iter, 1);   % array for objective function
 U = initU(data, cluster_n);
 T = initT(size(data,1), cluster_n);
 
+[~, i] = max(U, [], 1);
+figure
+if img_size(1) > 0 && img_size(2) > 0 
+    imshow(reshape(i, img_size(1), img_size(2)),[])
+    title('FCM output')
+else
+    gscatter(data(:,1), data(:,2), i')
+    title('FCM output')
+end
+
 for i = 1 : max_iter
     pre_U = U;
     [U, T, obj_fcn(i)] = step_simpfcml(data, U, T, cluster_n, ...

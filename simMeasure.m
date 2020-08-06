@@ -85,31 +85,81 @@ wth = w_thresh(data);
 % H = h_bandwidth(data);
 [~, c] = max(U, [], 1);
 
-for k = 1 : size(data, 1)
-    % d = zeros(size(data, 1), 1);
-    % dis = zeros(size(data, 1), 1);
-    d = sqrt(sum((repmat(data(k,:), size(data, 1), 1)- data).^2, 2));
-    dis = sqrt(sum((repmat(data_new(k,:), size(data_new, 1), 1)- data_new).^2, 2));
-%     for l = 1 : size(data, 1)
-%       d(l) = norm(data(l) - data(k));   
-%       dis(l) = norm(data_new(l) - data_new(k));
-%     end
+if log2(size(data, 1)) <= 12
+    d = sqrt(reshape(sum((repmat(data, size(data, 1), 1) - ...
+        repelem(data, size(data, 1), 1)).^2, 2), size(data, 1), size(data, 1)));
+    dis = sqrt(reshape(sum((repmat(data_new, size(data_new, 1), 1) - ...
+        repelem(data_new, size(data_new, 1), 1)).^2, 2), size(data, 1), size(data, 1)));
     ind = d < wth;
     d = d / H;
     dis = dis / Diag;
-    W = zeros(size(d));
+    W = zeros(size(data, 1), size(data, 1));
     W(ind) = exp(-1*d(ind).^2 - dis(ind));
-%     num = zeros(size(U));
-%     for n = 1 : size(U, 1)
-%         idx = c == n;
-%         num(n, idx) = 1;
-%     end
-%     num = num .* (a * U .^ m + b * T .^ eta);  
-%     mask = zeros(size(U));
-%     mask(:, ind) = 1;
-%     den_tmp = den .* mask;
-%     den_final = sum(den_tmp, 2);
-    rho(:, k) = (a * U .^ m + b * T .^ eta) * W ./ den ;
+    clear d
+    clear dis
+    rho = (a * U .^ m + b * T .^ eta) * W ./ repmat(den, 1, size(data, 1));
+    clear W
+elseif 12 < log2(size(data, 1)) && log2(size(data, 1)) < 16
+    if mod(size(data, 1), 4) == 0
+        n0 = size(data, 1)/4;
+        n = [n0, 2*n0, 3*n0, 4*n0];
+    else
+        n0 = floor(size(data, 1) / 4);
+        n = [n0, 2*n0, 3*n0, size(data, 1)];
+    end
+    for i = 1 : length(n)
+	if i ==  1
+		d = sqrt(reshape(sum((repmat(data, n(i), 1) - ...
+			repelem(data(1:n(i), :), size(data,1), 1)).^2, 2), size(data,1), n(i)));
+		dis = sqrt(reshape(sum((repmat(data_new, n(i), 1) - ...
+			repelem(data_new(1:n(i), :), size(data,1), 1)).^2, 2), size(data,1), n(i)));
+		ind = d < wth;
+		d = d / H;
+		dis = dis / Diag;
+		W = zeros(size(data, 1), n(i));
+		W(ind) = exp(-1*d(ind).^2 - dis(ind));
+		clear d
+		clear dis
+		rho(:, 1:n(i)) = (a * U .^ m + b * T .^ eta) * W ./ repmat(den, 1, n(i));
+		clear W
+	else
+		d = sqrt(reshape(sum((repmat(data, n(i)-n(i-1), 1) - ...
+        repelem(data(n(i-1)+1:n(i), :), size(data,1), 1)).^2, 2), size(data,1), n(i)-n(i-1)));
+		dis = sqrt(reshape(sum((repmat(data_new, n(i)-n(i-1), 1) - ...
+			repelem(data_new(n(i-1)+1:n(i), :), size(data,1), 1)).^2, 2), size(data,1), n(i)-n(i-1)));
+		ind = d < wth;
+		d = d / H;
+		dis = dis / Diag;
+		W = zeros(size(data, 1), n(i)-n(i-1));
+		W(ind) = exp(-1*d(ind).^2 - dis(ind));
+		clear d
+		clear dis
+		rho(:, n(i-1)+1:n(i)) = (a * U .^ m + b * T .^ eta) * W ./ repmat(den, 1, n(i)-n(i-1));
+		clear W
+	end
+    end
+else
+	for k = 1 : size(data, 1)
+	    d = sqrt(sum((repmat(data(k,:), size(data, 1), 1)- data).^2, 2));
+	    dis = sqrt(sum((repmat(data_new(k,:), size(data_new, 1), 1)- data_new).^2, 2));
+	    ind = d < wth;
+	    d = d / H;
+	    dis = dis / Diag;
+	    W = zeros(size(d));
+	    W(ind) = exp(-1*d(ind).^2 - dis(ind));
+	%     num = zeros(size(U));
+	%     for n = 1 : size(U, 1)
+	%         idx = c == n;
+	%         num(n, idx) = 1;
+	%     end
+	%     num = num .* (a * U .^ m + b * T .^ eta);  
+	%     mask = zeros(size(U));
+	%     mask(:, ind) = 1;
+	%     den_tmp = den .* mask;
+	%     den_final = sum(den_tmp, 2);
+	    rho(:, k) = (a * U .^ m + b * T .^ eta) * W ./ den ;
+	end
+    
 end
 
 %rho = rho ./ repmat(den, 1, size(data, 1));
@@ -118,12 +168,21 @@ end
 %rho = (a * U .^ m + b * T .^ eta) * W ./ den; % todo: d_lk < w is not considered
 end
 
+function out = u(x)
+if x > 0
+    out = 1;
+else
+    out = 0;
+end
+end
+
+
 function w = w_thresh(data)
 mean_data = mean(data, 1);
 data_white = data - repmat(mean_data, size(data, 1), 1);
 data_white = sqrt(sum(data_white .^ 2, 2));
 d_bar = mean(data_white, 1);
-delta = 0.3;
+delta = 0.4;
 w = delta * d_bar;
 end
 

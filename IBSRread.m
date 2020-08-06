@@ -38,5 +38,5 @@ q=reshape(a,256,256,b(n,5));
 k=b(n,6)+1:b(n,7)-1;
 q=q(:,:,k+b(n,3));
 i=i(:,:,k); 
-imshow(uint8(q(:,:,20)))
-figure, imshow(uint8(i(:,:,20)))
+%imshow(uint8(q(:,:,20)))
+%figure, imshow(uint8(i(:,:,20)))
