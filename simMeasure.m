@@ -18,6 +18,9 @@ tau = S * rho;
 end
 
 function S = similarity(data, cluster_n, U, T, m, eta, a, b, H, img_size)
+%SIMILARITY Computes the similarity measure S introduced in the paper
+%   S(ij) = sum(rho(ik)*rho(jk))/sqrt(sum(rho(ik))*sum(rho(jk))) 
+%   k = argmax{rho(ik) or rho(jk)}
 
 if nargin < 9
     rho = rel_sim(data, U, T, m, eta, a, b, H, img_size);
@@ -52,16 +55,19 @@ S = S + S' - diag(diag(S));
 end
 
 function rho = rel_sim(data, U, T, m , eta, a, b, H, img_size)
-
-% if nargin < 8
-%     W = point_sim(data);
-% else
-%     W = point_sim(data, img_size);
-% end
+%REL_SIM Computes relative similarity measure, rho, introduced in the paper
+%   rho(ik) = sum((a*u(il)^m+b*t(il)^eta)W(lk))/sum((a*u(il)^m+b*t(il))
+%   W(lk) = exp(-(d(lk)/H)^2 - dis(lk)/Diag)
+%   d(lk) = Euclidean distance between pixel intensities (in case of image
+%   input) and Euclidean distance between point coordinates otherwise
+%   dis(lk) = Euclidean distance between coordinates
+%   Diag is the farthest distance of two points among
+%   all points
 
 if nargin == 9
     data_ind = 1 : length(data);
     data_new = zeros(size(data,1), 2);
+    % extraction of 2D coordinate of each pixel
     [data_new(:, 1), data_new(:,2)] = ind2sub(img_size, data_ind);
     Diag = sqrt((img_size(1)-1)^2 + (img_size(2)-1)^2);
 else
@@ -70,11 +76,10 @@ else
 end
 rho = zeros(size(U, 1), size(data, 1));
 den = sum(a * U .^ m + b * T .^ eta, 2);
-% den = a * U .^ m + b * T .^ eta;
 wth = w_thresh(data);
-% H = h_bandwidth(data);
-[~, c] = max(U, [], 1);
 
+% according to the size of data choose which method to use for calculation
+% of distances
 if log2(size(data, 1)) <= 12
     d = sqrt(reshape(sum((repmat(data, size(data, 1), 1) - ...
         repelem(data, size(data, 1), 1)).^2, 2), size(data, 1), size(data, 1)));
@@ -144,20 +149,14 @@ end
 
 end
 
-function out = u(x)
-if x > 0
-    out = 1;
-else
-    out = 0;
-end
-end
-
 
 function w = w_thresh(data)
+%W_THRESH Computes the threshold for d(lk) in d(lk)<w in calculation of rho
+
 mean_data = mean(data, 1);
 data_white = data - repmat(mean_data, size(data, 1), 1);
 data_white = sqrt(sum(data_white .^ 2, 2));
 d_bar = mean(data_white, 1);
-delta = 0.5;
+delta = 0.3;
 w = delta * d_bar;
 end
